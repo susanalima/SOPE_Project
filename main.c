@@ -11,5 +11,6 @@ int main(int argc, char const *argv[]) {
     printf("%s\n",guardar[i]);
   }
   printf("%d\n",binarySearchArrayString(guardar,quantidade,"ola")+1);
+  printf("%d\n",searchArrayString(guardar,quantidade,"la")+1);
   return 0;
 }

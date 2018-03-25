@@ -19,13 +19,26 @@ int separarPor(const char *o_que_separar,const char* delimitador,char*** guardar
 */
 void mergeSortArrayString(char*** array,int tamanho);
 /**
-*@brief Procura no array de string pela string pretendida
+*@brief Procura no array de string pela string pretendida atraves do algoritmo de pesquisa binaria
 *
 *@param array O array onde eu vou querer procurar
 *@param tamanho O tamanho do array de strings
 *@param a_procurar A string que eu quero procurar no array
 *
-*@return Retorna o indice onde se encontra a string que quer procurar (0-tamanho) ou -1 se não encontrar
+*@return Retorna o indice onde se encontra a string que se quer procurar (0-tamanho) ou -1 se não encontrar
 *
+*@note O array de strings deve estar previamente ordenado
 */
 int binarySearchArrayString(char** array,int tamanho,char* a_procurar);
+/**
+*@brief Procura em cada string do array um ocorrecia da palavra a procurar
+*
+*@param array O array onde eu vou querer procurar
+*@param tamanho O tamanho do array de strings
+*@param a_procurar A string que eu quero procurar no array
+*
+*@return Retorna o primeiro indice onde se encontra a string que se quer procurar (0-tamanho) ou -1 se não encontrar
+*
+*@note Retorna unicamente a primeira ocurrencia
+*/
+int searchArrayString(char** array,int tamanho,char* a_procurar);

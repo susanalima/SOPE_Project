@@ -108,3 +108,15 @@ int binarySearchArrayString(char** array,int tamanho,char* a_procurar)
   }
   return -1;
 }
+
+int searchArrayString(char** array,int tamanho,char* a_procurar)
+{
+  for(int i=0;i<tamanho;i++)
+  {
+    if(strstr(array[i],a_procurar)!=NULL)
+    {
+      return i;
+    }
+  }
+  return -1;
+}
