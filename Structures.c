@@ -1,65 +1,28 @@
-
 #include "Structures.h"
 
-Flags* create_Flags(int ignoreCase,int showFileName,int showLinesNumber,int sowNumberOfLines,int patternIsFullWord)
-{
-	Flags* flags;
-	int s;
-	s = alloc_Flags(&flags);
-	if (s != OK) return NULL;
-	flags->ignoreCase = ignoreCase;
-	flags->showFileName = showFileName;
-	flags->showLinesNumber = showLinesNumber;
-	flags->sowNumberOfLines = sowNumberOfLines;
-	flags->patternIsFullWord = patternIsFullWord;
-	return flags;
-}
-
-int alloc_Flags(Flags** flags)
-{
-	*flags = NULL;
-	Flags* f = (Flags*)calloc(sizeof(Flags),1);
-	if (f == NULL) return ERROR;
-	*flags = f;
-	return OK;
-}
-
-void free_Flags(Flags** flags)
-{
-	if (*flags == NULL || flags == NULL) return;
-	free(*flags);
-	*flags = NULL;
-}
-
 //nao esta a ver a ordem pela qual eles aparecem
-Flags* createAndSet_Flags(int argc, char* argv[])
+int set_Flags(int argc, char* argv[],Flags *flags)
 {
-	int i;
-	int ignoreCase =FALSE, showFileName=FALSE,showLinesNumber=FALSE,sowNumberOfLines=FALSE,patternIsFullWord=FALSE;
-	Flags* flags;
-	if (argc == 3) 
+	if (argc == 3)
 	{
-		flags = create_Flags(ignoreCase,showFileName,showLinesNumber,sowNumberOfLines,patternIsFullWord);
-		return flags;
+		return 0;
 	}
-
-	for (i = 0; i < argc; i++)
+	for (int i = 0; i < argc; i++)
 	{
 		if (strcmp(argv[i], "-i") == 0)
-			ignoreCase = TRUE;
+			flags->ignoreCase = TRUE;
 		if (strcmp(argv[i], "-l") == 0)
-			showFileName = TRUE;
+			flags->showFileName = TRUE;
 		if (strcmp(argv[i], "-n") == 0)
-			showLinesNumber = TRUE;
+			flags->showLinesNumber = TRUE;
 		if (strcmp(argv[i], "-c") == 0)
-			sowNumberOfLines = TRUE;
+			flags->sowNumberOfLines = TRUE;
 		if (strcmp(argv[i], "-w") == 0)
-			patternIsFullWord = TRUE;
+			flags->patternIsFullWord = TRUE;
 		if (strcmp(argv[i], "-r") == 0)
-			return NULL;
+			return 1;
 	}
-	flags = create_Flags(ignoreCase,showFileName,showLinesNumber,sowNumberOfLines,patternIsFullWord);
-	return flags;
+	return 0;
 }
 
 
@@ -130,7 +93,7 @@ void free_FileInfo(FileInfo** fileInfo)
 	if (fileInfo == NULL || *fileInfo == NULL) return;
 	else
 	{
-		if ((*fileInfo)->flags != NULL) free_Flags(&(*fileInfo)->flags);
+		//if ((*fileInfo)->flags != NULL) free_Flags(&(*fileInfo)->flags);
 		if ((*fileInfo)->filename != NULL) free((*fileInfo)->filename);
 		free((*fileInfo)->lines);
 		free(*fileInfo);

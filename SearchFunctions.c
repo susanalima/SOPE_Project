@@ -23,13 +23,13 @@ int LineSearch(Flags* flags, char* pattern, char* line)
 	memset(lineCopy,'\n',sizeof(*line));
 	strcpy(lineCopy,line);
 
-	if ((*flags).ignoreCase )
+	if (flags->ignoreCase )
 	{
 		strlwr(lineCopy);
 		strlwr(patternCopy);
 	}
 
-	if (!(*flags).patternIsFullWord)
+	if (!flags->patternIsFullWord)
 	{
 		if(strstr(lineCopy,patternCopy)) return TRUE;
 		else return FALSE;
@@ -69,39 +69,39 @@ int FileSearch(FileInfo* fileInfo, char* pattern)
 	while(!feof(file))
 	{
 		//reads the line
-		char character;
-	    int numberOfLines = 1;
-	    char* str;
-	    str = (char*)calloc(sizeof(char),numberOfLines);
-	    if (str == NULL)
-			{
-				fclose(file);
-				return ERROR;
-			}
-	    if (character == EOF && numberOfLines == 1)
-			{
-				free(str);
-				fclose(file);
-				return ERROR;
-			}
-	    while ((character = fgetc(file)) != '\n' && character != EOF)
-	    {
-	    	numberOfLines++;
-	        str = realloc(str, numberOfLines);
-	        if (str == NULL)
-	        {
-							fclose(file);
-	            free(str);
-	            return ERROR;
-	        }
-	        str[numberOfLines-2] = character;
-	    }
-			
-			if(!feof(file))
-	    	str[numberOfLines-2] = '\0';
-			else
-				str[numberOfLines-1] = '\0';
-			strcat(str, "\n");
+		char character=' ';
+    int numberOfLines = 1;
+    char* str;
+    str = (char*)calloc(sizeof(char),numberOfLines);
+    if (str == NULL)
+    {
+      fclose(file);
+      return ERROR;
+    }
+    if (character == EOF && numberOfLines == 1)
+    {
+      free(str);
+      fclose(file);
+      return ERROR;
+    }
+    while ((character = fgetc(file)) != '\n' && character != EOF)
+    {
+        numberOfLines++;
+        str = realloc(str, numberOfLines);
+        if (str == NULL)
+        {
+            fclose(file);
+            free(str);
+            return ERROR;
+        }
+        str[numberOfLines-2] = character;
+    }
+
+    if(!feof(file))
+      str[numberOfLines-2] = '\0';
+    else
+      str[numberOfLines-1] = '\0';
+    strcat(str, "\n");
 
 	    //finds the pattern in the line
 		lineNumber++;

@@ -1,4 +1,4 @@
-#include "librarias.h"
+#include "libraries.h"
 int separarPor(const char *o_que_separar,const char* delimitador,char***guardar)
 {
   free(*guardar);

@@ -2,6 +2,12 @@
 
 typedef struct
 {
+	char* string;
+	int size;
+}String;
+
+typedef struct
+{
 	int ignoreCase;
 	int showFileName;
 	int showLinesNumber;
@@ -9,15 +15,8 @@ typedef struct
 	int patternIsFullWord;
 }Flags;
 
-
-Flags* create_Flags(int ignoreCase,int showFileName,int showLinesNumber,int sowNumberOfLines,int patternIsFullWord);
-
-int alloc_Flags(Flags** flags);
-
-void free_Flags(Flags** flags);
-
 //nao esta a ver a ordem
-Flags* createAndSet_Flags(int argc, char* argv[]);
+int set_Flags(int argc, char* argv[],Flags *flags);
 
 
 typedef struct
@@ -37,7 +36,7 @@ void free_Line(Line** line);
 typedef struct
 {
 	char* filename;
-	Flags* flags;
+	Flags* flags; // pointer para poder ser alterado
 	Line** lines;
 	int numberOfLinesWithPattern;
 
