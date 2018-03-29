@@ -67,9 +67,10 @@ int FileSearch(FileInfo* fileInfo, char* pattern)
 	}
 
   char* str;
-  size_t tamanho;
+  size_t nByte;
+  ssize_t comprimento;
   int numberOfLines=1;
-	while(getline(&str,&tamanho,file)!=-1)
+	while((comprimento=getline(&str,&nByte,file))!=-1)
 	{
 	    //finds the pattern in the line
 		lineNumber++;
@@ -78,7 +79,7 @@ int FileSearch(FileInfo* fileInfo, char* pattern)
 		{
 			numberOfLinesWithPattern++;
 			Line* line;
-			line = create_Line(str, lineNumber, numberOfLines+1);
+			line = create_Line(str, lineNumber, comprimento);
 			fileInfo->lines = realloc(fileInfo->lines, numberOfLinesWithPattern*sizeof(Line*));
 			fileInfo->lines[counter] = line;
 			counter++;

@@ -20,7 +20,7 @@ int main (int argc, char *argv[]) {
 		printf("work in progress...\n");
 		return 0;
 	}
-	printf("%d %d %d %d %d",flags.ignoreCase,flags.showFileName,flags.showLinesNumber,flags.sowNumberOfLines,flags.patternIsFullWord);
+	//printf("%d %d %d %d %d",flags.ignoreCase,flags.showFileName,flags.showLinesNumber,flags.sowNumberOfLines,flags.patternIsFullWord);
 	FileInfo fileInfo;
 	fileInfo.filename=argv[argc-1];
 	fileInfo.flags=&flags;

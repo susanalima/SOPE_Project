@@ -26,7 +26,7 @@ int set_Flags(int argc, char* argv[],Flags *flags)
 }
 
 
-Line* create_Line(char* line, int lineNumber, int size)
+Line * create_Line(char* line, int lineNumber, int size)
 {
 	Line* Line;
 	int s;
@@ -41,10 +41,10 @@ Line* create_Line(char* line, int lineNumber, int size)
 int alloc_Line(Line** line, int size)
 {
 	*line = NULL;
-	Line* L = (Line*)calloc(sizeof(Line),1);
+	Line* L = calloc(sizeof(Line),1);
 	if (L == NULL) return ERROR;
 	*line = L;
-	(*line)->line = (char*)malloc(size*sizeof(char));
+	(*line)->line = malloc(size*sizeof(char));
 	if ((*line)->line == NULL) return ERROR;
 	return OK;
 }
@@ -79,7 +79,7 @@ int alloc_FileInfo(FileInfo** fileInfo,char* filename)
 	FileInfo* fi = (FileInfo*)calloc(sizeof(FileInfo),1);
 	if( fi == NULL) return ERROR;
 	*fileInfo = fi;
-	(*fileInfo)->filename = (char*)malloc(strlen(filename)*sizeof(char));
+	(*fileInfo)->filename = malloc(strlen(filename)*sizeof(char));
 	if ((*fileInfo)->filename == NULL) return ERROR;
 	(*fileInfo)->lines = (Line**)malloc(sizeof(Line*));
 	if ((*fileInfo)->lines == NULL) return ERROR;

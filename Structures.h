@@ -26,7 +26,7 @@ typedef struct
 } Line;
 
 
-Line* create_Line(char* line, int lineNumber, int size);
+Line * create_Line(char* line, int lineNumber, int size);
 
 int alloc_Line(Line** line, int size);
 
