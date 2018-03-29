@@ -20,12 +20,12 @@ int main (int argc, char *argv[]) {
 		printf("work in progress...\n");
 		return 0;
 	}
-	printf("%d %d %d %d %d",flags.ignoreCase,flags.showFileName,flags.showLinesNumber,flags.sowNumberOfLines,flags.patternIsFullWord);
 	FileInfo fileInfo;
 	fileInfo.filename=argv[argc-1];
 	fileInfo.flags=&flags;
 	if((fileInfo.lines=malloc(sizeof(*fileInfo.lines)))==NULL)
 		printf("Erro na alocação de memoria\n");
+
 
 	int s = FileSearch(&fileInfo,pattern);
 	if (s == ERROR)

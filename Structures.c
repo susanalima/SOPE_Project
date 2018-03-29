@@ -28,76 +28,13 @@ int set_Flags(int argc, char* argv[],Flags *flags)
 
 Line * create_Line(char* line, int lineNumber, int size)
 {
-	Line* Line;
-	int s;
-	s = alloc_Line(&Line, size);
-	if (s != OK) return NULL;
-	Line->lineNumber = lineNumber;
-	strcpy(Line->line,line);
-	return Line;
-}
-
-
-int alloc_Line(Line** line, int size)
-{
-	*line = NULL;
-	Line* L = calloc(sizeof(Line),1);
-	if (L == NULL) return ERROR;
-	*line = L;
-	(*line)->line = malloc(size*sizeof(char));
-	if ((*line)->line == NULL) return ERROR;
-	return OK;
-}
-
-
-void free_Line(Line** line)
-{
-	if (*line == NULL || line == NULL) return;
-	if ((*line)->line != NULL) free(&(*line)->line);
-	free(*line);
-	*line = NULL;
-}
-
-
-
-FileInfo* create_FileInfo(char* filename, Flags* flags)
-{
-	FileInfo* fileInfo;
-	int s;
-	s = alloc_FileInfo(&fileInfo,filename);
-	if (s != OK) return NULL;
-	strcpy(fileInfo->filename,filename);
-	fileInfo->flags = flags;
-	fileInfo->numberOfLinesWithPattern = 0;
-	return fileInfo;
-}
-
-
-int alloc_FileInfo(FileInfo** fileInfo,char* filename)
-{
-	*fileInfo = NULL;
-	FileInfo* fi = (FileInfo*)calloc(sizeof(FileInfo),1);
-	if( fi == NULL) return ERROR;
-	*fileInfo = fi;
-	(*fileInfo)->filename = malloc(strlen(filename)*sizeof(char));
-	if ((*fileInfo)->filename == NULL) return ERROR;
-	(*fileInfo)->lines = (Line**)malloc(sizeof(Line*));
-	if ((*fileInfo)->lines == NULL) return ERROR;
-	return OK;
-}
-
-
-//nao faz free do array de line...
-void free_FileInfo(FileInfo** fileInfo)
-{
-	if (fileInfo == NULL || *fileInfo == NULL) return;
-	else
-	{
-		//if ((*fileInfo)->flags != NULL) free_Flags(&(*fileInfo)->flags);
-		if ((*fileInfo)->filename != NULL) free((*fileInfo)->filename);
-		free((*fileInfo)->lines);
-		free(*fileInfo);
-		*fileInfo = NULL;
-
-	}
+	Line *linha=malloc(sizeof(Line)*1);
+	if(linha==NULL)
+		return NULL;
+	linha->lineNumber=lineNumber;
+	linha->line=malloc(sizeof(char)*size);
+	if(linha->line==NULL)
+		return NULL;
+	strcpy(linha->line,line);
+	return linha;
 }

@@ -1,6 +1,7 @@
 
 #include "SearchFunctions.h"
 
+
 //nao devia estar aqui
 char* strlwr(char *str)
 {
@@ -55,10 +56,10 @@ int WordSearch(char* pattern, char* line)
 
 int FileSearch(FileInfo* fileInfo, char* pattern)
 {
-	int foundPattern = FALSE;
 	int lineNumber = 0;
 	int counter = 0;
 	int numberOfLinesWithPattern = 0;
+
 	FILE* file;
 	file = fopen(fileInfo->filename,"r");
 	if(file == NULL) {
@@ -67,21 +68,19 @@ int FileSearch(FileInfo* fileInfo, char* pattern)
 	}
 
   char* str;
-  size_t nByte;
-  ssize_t comprimento;
-  int numberOfLines=1;
-	while((comprimento=getline(&str,&nByte,file))!=-1)
+  size_t nbyte;
+  ssize_t tamanho;
+	while((tamanho=getline(&str,&nbyte,file))!=-1)
 	{
-	    //finds the pattern in the line
 		lineNumber++;
-		foundPattern = LineSearch(fileInfo->flags,pattern,str);
-		if (foundPattern)
+		if (LineSearch(fileInfo->flags,pattern,str))
 		{
 			numberOfLinesWithPattern++;
-			Line* line;
-			line = create_Line(str, lineNumber, comprimento);
-			fileInfo->lines = realloc(fileInfo->lines, numberOfLinesWithPattern*sizeof(Line*));
-			fileInfo->lines[counter] = line;
+			fileInfo->lines = realloc(fileInfo->lines, numberOfLinesWithPattern*sizeof(Line));
+      Line *linha=create_Line(str,lineNumber,tamanho);
+      if(linha==NULL)
+        return ERROR;
+			fileInfo->lines[counter] = *linha;
 			counter++;
 		}
 	}
@@ -115,7 +114,8 @@ void PrintFileInfo(FileInfo* fileInfo)
 	for (i = 0; i < fileInfo->numberOfLinesWithPattern; i++)
 	{
 		if (fileInfo->flags->showLinesNumber)
-			printf("%d : ", fileInfo->lines[i]->lineNumber);
-		printf("%s", fileInfo->lines[i]->line);
+			printf("%d : ", fileInfo->lines[i].lineNumber);
+		printf("%s", fileInfo->lines[i].line);
 	}
+  printf("\n");
 }

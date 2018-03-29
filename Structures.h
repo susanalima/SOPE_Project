@@ -28,23 +28,12 @@ typedef struct
 
 Line * create_Line(char* line, int lineNumber, int size);
 
-int alloc_Line(Line** line, int size);
-
-void free_Line(Line** line);
-
 
 typedef struct
 {
 	char* filename;
 	Flags* flags; // pointer para poder ser alterado
-	Line** lines;
+	Line* lines;
 	int numberOfLinesWithPattern;
 
 } FileInfo;
-
-
-FileInfo* create_FileInfo(char* filename, Flags* flags);
-
-int alloc_FileInfo(FileInfo** fileInfo,char* filename);
-
-void free_FileInfo(FileInfo** fileInfo);
