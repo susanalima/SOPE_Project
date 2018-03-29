@@ -30,7 +30,6 @@ int main (int argc, char *argv[]) {
 	int s = FileSearch(&fileInfo,pattern);
 	if (s == ERROR)
 		exit(2);
-	PrintFileInfo(fileInfo);
-	free_FileInfo(&fileInfo);
+	PrintFileInfo(&fileInfo);
 	return 0;
 }

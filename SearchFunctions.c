@@ -66,43 +66,11 @@ int FileSearch(FileInfo* fileInfo, char* pattern)
 	      return ERROR;
 	}
 
-	while(!feof(file))
+  char* str;
+  size_t tamanho;
+  int numberOfLines=1;
+	while(getline(&str,&tamanho,file)!=-1)
 	{
-		//reads the line
-		char character=' ';
-    int numberOfLines = 1;
-    char* str;
-    str = (char*)calloc(sizeof(char),numberOfLines);
-    if (str == NULL)
-    {
-      fclose(file);
-      return ERROR;
-    }
-    if (character == EOF && numberOfLines == 1)
-    {
-      free(str);
-      fclose(file);
-      return ERROR;
-    }
-    while ((character = fgetc(file)) != '\n' && character != EOF)
-    {
-        numberOfLines++;
-        str = realloc(str, numberOfLines);
-        if (str == NULL)
-        {
-            fclose(file);
-            free(str);
-            return ERROR;
-        }
-        str[numberOfLines-2] = character;
-    }
-
-    if(!feof(file))
-      str[numberOfLines-2] = '\0';
-    else
-      str[numberOfLines-1] = '\0';
-    strcat(str, "\n");
-
 	    //finds the pattern in the line
 		lineNumber++;
 		foundPattern = LineSearch(fileInfo->flags,pattern,str);
