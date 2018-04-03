@@ -73,11 +73,11 @@ int FileSearch(FileInfo* fileInfo, char* pattern)
 	while((tamanho=getline(&str,&nbyte,file))!=-1)
 	{
 		lineNumber++;
-		if (LineSearch(fileInfo->flags,pattern,str))
+    if (LineSearch(fileInfo->flags,pattern,str))
 		{
 			numberOfLinesWithPattern++;
 			fileInfo->lines = realloc(fileInfo->lines, numberOfLinesWithPattern*sizeof(Line));
-      Line *linha=create_Line(str,lineNumber,tamanho);
+      Line *linha=create_Line(str,lineNumber,tamanho+1);
       if(linha==NULL)
         return ERROR;
 			fileInfo->lines[counter] = *linha;
