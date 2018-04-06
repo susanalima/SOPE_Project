@@ -20,7 +20,10 @@ int set_Flags(int argc, char* argv[],Flags *flags)
 		if (strcmp(argv[i], "-w") == 0)
 			flags->patternIsFullWord = TRUE;
 		if (strcmp(argv[i], "-r") == 0)
-			return 1;
+			{
+				flags->isdirectory = TRUE;
+				return 1;
+			}
 	}
 	return 0;
 }

@@ -8,7 +8,7 @@ int WordSearch(char* pattern, char* line);
 
 int FileSearch(FileInfo* fileInfo, char* pattern);
 
-
+int DirectorySearch(Flags* flags, char*pattern, char* path);
 
 									/*******AUXILIAR FUNCTIONS**********/
 

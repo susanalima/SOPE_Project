@@ -103,50 +103,68 @@ int DirectorySearch(Flags* flags, char*pattern, char* path)
   DIR *dirp;
  struct dirent *direntp;
  struct stat stat_buf;
- char *str;
+ int pid;
 
- if (argc != 2)
- {
-  fprintf( stderr, "Usage: %s dir_name\n", argv[0]);
-  exit(1);
- }
+ if ((dirp = opendir(path)) == NULL)
+  return ERROR;
 
- if ((dirp = opendir( argv[1])) == NULL)
+ while ((direntp = readdir(dirp)) != NULL)
  {
-  perror(argv[1]);
-  exit(2);
- }
 
- while ((direntp = readdir( dirp)) != NULL)
- {
-   printf("i-node: %li\n",direntp->d_ino);
   if (stat(direntp->d_name, &stat_buf)==-1)   // testar com stat()
-  {
-   exit(3);
-  }
+    return ERROR;
   if (S_ISREG(stat_buf.st_mode))
   {
-    str = "regular";
-    printf("file size: %ld\n",stat_buf.st_size);
+    FileInfo fileInfo;
+  	fileInfo.filename=direntp->d_name;
+  	fileInfo.flags=flags;
+  	if((fileInfo.lines=malloc(sizeof(*fileInfo.lines)))==NULL)
+    {
+      printf("Erro na alocação de memoria\n");
+      return ERROR;
+    }
+
+  	int s = FileSearch(&fileInfo,pattern);
+  	if (s == ERROR)
+  		exit(2);
+  	PrintFileInfo(&fileInfo);
   }
-  else if (S_ISDIR(stat_buf.st_mode)) str = "directory";
-  else str = "other";
-  printf("%-25s - %s\n", direntp->d_name, str);
+  else if (S_ISDIR(stat_buf.st_mode))
+  {
+    if (strcmp(direntp->d_name,".") != 0 && strcmp(direntp->d_name,"..") != 0 )
+    {
+      pid = fork();
+      if (pid == -1) return ERROR;
+      if (pid > 0)
+      {
+        //wait(NULL);
+      }
+      else
+      {
+        DirectorySearch(flags,pattern,direntp->d_name);
+        exit(0);
+      }
+    }
+
+  }
  }
 
  closedir(dirp);
- exit(0);
+ return OK;
 
 }
 
 
 void PrintFileInfo(FileInfo* fileInfo)
 {
-	if (fileInfo->numberOfLinesWithPattern == 0)
-	{
-		printf("The given pattern was not found\n");
-		return;
-	}
+  if (!fileInfo->flags->isdirectory)
+  {
+  	if (fileInfo->numberOfLinesWithPattern == 0)
+  	{
+  		printf("The given pattern was not found\n");
+  		return;
+  	}
+  }
 	if (fileInfo->flags->showFileName)
 	{
 		printf("%s\n", fileInfo->filename);
@@ -155,6 +173,8 @@ void PrintFileInfo(FileInfo* fileInfo)
 
 	if(fileInfo->flags->sowNumberOfLines)
 	{
+    if (fileInfo->flags->isdirectory)
+      printf("%s: ", fileInfo->filename);
 		printf("%d\n",fileInfo->numberOfLinesWithPattern );
 		return;
 	}
@@ -162,9 +182,12 @@ void PrintFileInfo(FileInfo* fileInfo)
 	int i;
 	for (i = 0; i < fileInfo->numberOfLinesWithPattern; i++)
 	{
+    if (fileInfo->flags->isdirectory)
+      printf("%s: ", fileInfo->filename);
 		if (fileInfo->flags->showLinesNumber)
 			printf("%d : ", fileInfo->lines[i].lineNumber);
 		printf("%s", fileInfo->lines[i].line);
+    if (i == fileInfo->numberOfLinesWithPattern - 1)
+      printf("\n");
 	}
-  printf("\n");
 }

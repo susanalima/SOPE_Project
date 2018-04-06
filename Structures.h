@@ -13,6 +13,7 @@ typedef struct
 	int showLinesNumber;
 	int sowNumberOfLines;
 	int patternIsFullWord;
+	int isdirectory;
 }Flags;
 
 //nao esta a ver a ordem
@@ -32,7 +33,7 @@ Line * create_Line(char* line, int lineNumber, int size);
 typedef struct
 {
 	char* filename;
-	Flags* flags; // pointer para poder ser alterado
+	Flags* flags;
 	Line* lines;
 	int numberOfLinesWithPattern;
 
