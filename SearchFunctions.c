@@ -13,6 +13,15 @@ char* strlwr(char *str)
   return str;
 }
 
+//nao devia estar aqui
+int isDirectory(char* path)
+{
+  struct stat sbuf;
+  if(stat(path,&sbuf) != OK)
+    return 0;
+  return S_ISDIR(sbuf.st_mode); //returns non zero if the file is a directory
+}
+
 
 int LineSearch(Flags* flags, char* pattern, char* line)
 {
@@ -43,7 +52,7 @@ int LineSearch(Flags* flags, char* pattern, char* line)
 int WordSearch(char* pattern, char* line)
 {
 	char* token;
-	token = strtok(line," \n,.!?:-");
+	token = strtok(line," \n,.!?:-;");
 	while(token != NULL)
 	{
 		if (strcmp(token,pattern) == 0)
@@ -69,18 +78,18 @@ int FileSearch(FileInfo* fileInfo, char* pattern)
 
   char* str;
   size_t nbyte;
-  ssize_t tamanho;
-	while((tamanho=getline(&str,&nbyte,file))!=-1)
+  ssize_t size;
+	while((size=getline(&str,&nbyte,file))!=-1)
 	{
 		lineNumber++;
     if (LineSearch(fileInfo->flags,pattern,str))
 		{
 			numberOfLinesWithPattern++;
 			fileInfo->lines = realloc(fileInfo->lines, numberOfLinesWithPattern*sizeof(Line));
-      Line *linha=create_Line(str,lineNumber,tamanho+1);
-      if(linha==NULL)
+      Line *line=create_Line(str,lineNumber,size+1);
+      if(line==NULL)
         return ERROR;
-			fileInfo->lines[counter] = *linha;
+			fileInfo->lines[counter] = *line;
 			counter++;
 		}
 	}
@@ -89,6 +98,12 @@ int FileSearch(FileInfo* fileInfo, char* pattern)
 	return OK;
 }
 
+int DirectorySearch(Flags* flags, char*pattern, char* path)
+{
+  DIR *dir;
+  s
+
+}
 
 
 void PrintFileInfo(FileInfo* fileInfo)
