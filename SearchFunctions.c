@@ -100,8 +100,42 @@ int FileSearch(FileInfo* fileInfo, char* pattern)
 
 int DirectorySearch(Flags* flags, char*pattern, char* path)
 {
-  DIR *dir;
-  s
+  DIR *dirp;
+ struct dirent *direntp;
+ struct stat stat_buf;
+ char *str;
+
+ if (argc != 2)
+ {
+  fprintf( stderr, "Usage: %s dir_name\n", argv[0]);
+  exit(1);
+ }
+
+ if ((dirp = opendir( argv[1])) == NULL)
+ {
+  perror(argv[1]);
+  exit(2);
+ }
+
+ while ((direntp = readdir( dirp)) != NULL)
+ {
+   printf("i-node: %li\n",direntp->d_ino);
+  if (stat(direntp->d_name, &stat_buf)==-1)   // testar com stat()
+  {
+   exit(3);
+  }
+  if (S_ISREG(stat_buf.st_mode))
+  {
+    str = "regular";
+    printf("file size: %ld\n",stat_buf.st_size);
+  }
+  else if (S_ISDIR(stat_buf.st_mode)) str = "directory";
+  else str = "other";
+  printf("%-25s - %s\n", direntp->d_name, str);
+ }
+
+ closedir(dirp);
+ exit(0);
 
 }
 
