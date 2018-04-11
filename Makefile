@@ -1,4 +1,4 @@
-SRC=*.c
+SRC=src/*.c
 
 all:
 	gcc -Wall $(SRC) -o run

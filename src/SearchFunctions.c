@@ -1,0 +1,211 @@
+
+#include "SearchFunctions.h"
+
+
+//nao devia estar aqui
+char* strlwr(char *str)
+{
+  char *character = str;
+  while (*character) {
+     *character = tolower(*character);
+      character++;
+  }
+  return str;
+}
+
+//nao devia estar aqui
+int isDirectory(char* path)
+{
+  struct stat sbuf;
+  if(stat(path,&sbuf) != OK)
+    return 0;
+  return S_ISDIR(sbuf.st_mode); //returns non zero if the file is a directory
+}
+
+
+int LineSearch(Flags* flags, char* pattern, char* line)
+{
+	char patternCopy[strlen(pattern+1)];
+	memset(patternCopy,'\n',sizeof(*pattern));
+	strcpy(patternCopy,pattern);
+
+	char lineCopy[strlen(line)+1];
+	memset(lineCopy,'\n',sizeof(*line));
+	strcpy(lineCopy,line);
+
+	if (flags->ignoreCase )
+	{
+		strlwr(lineCopy);
+		strlwr(patternCopy);
+	}
+
+	if (!flags->patternIsFullWord)
+	{
+		if(strstr(lineCopy,patternCopy)) return TRUE;
+		else return FALSE;
+	}
+	else
+		return WordSearch(patternCopy,lineCopy);
+}
+
+
+int WordSearch(char* pattern, char* line)
+{
+	char* token;
+	token = strtok(line," \n,.!?:-;");
+	while(token != NULL)
+	{
+		if (strcmp(token,pattern) == 0)
+				return TRUE;
+		token = strtok(NULL, " \n,.!?:-;");
+	}
+	return FALSE;
+}
+
+
+int FileSearch(FileInfo* fileInfo, char* pattern)
+{
+	int lineNumber = 0;
+	int counter = 0;
+	int numberOfLinesWithPattern = 0;
+
+	FILE* file;
+	file = fopen(fileInfo->filename,"r");
+	if(file == NULL) {
+	      perror("Error opening file");
+	      return ERROR;
+	}
+
+  char* str;
+  size_t nbyte;
+  ssize_t size;
+	while((size=getline(&str,&nbyte,file))!=-1)
+	{
+		lineNumber++;
+    if (LineSearch(fileInfo->flags,pattern,str))
+		{
+			numberOfLinesWithPattern++;
+			fileInfo->lines = realloc(fileInfo->lines, numberOfLinesWithPattern*sizeof(Line));
+      Line *line=create_Line(str,lineNumber,size+1);
+      if(line==NULL)
+        return ERROR;
+			fileInfo->lines[counter] = *line;
+			counter++;
+		}
+	}
+	fclose(file);
+	fileInfo->numberOfLinesWithPattern = counter;
+	return OK;
+}
+
+int DirectorySearch(Flags* flags, char*pattern, char* path)
+{
+  DIR *dirp;
+ struct dirent *direntp;
+ struct stat stat_buf;
+ int pid;
+ char cwd[1024];
+ printf("Começei pesquisa\n");
+ if ((dirp = opendir(path)) == NULL)
+  return ERROR;
+  printf("fixe\n");
+ while ((direntp = readdir(dirp)) != NULL)
+ {
+   printf("nome ficheiro:%s %s\n",direntp->d_name,path);
+  if (stat(direntp->d_name, &stat_buf)==-1)   // testar com stat()
+  {
+    printf("error here\n");
+    return ERROR;
+  }
+  if (S_ISREG(stat_buf.st_mode))
+  {
+    printf("regular:%s\n",direntp->d_name);
+    FileInfo fileInfo;
+  	fileInfo.filename=direntp->d_name;
+  	fileInfo.flags=flags;
+  	if((fileInfo.lines=malloc(sizeof(*fileInfo.lines)))==NULL)
+    {
+      printf("Erro na alocação de memoria\n");
+      return ERROR;
+    }
+
+  	int s = FileSearch(&fileInfo,pattern);
+  	if (s == ERROR)
+    {
+      printf("erro 2\n");
+  		exit(2);
+    }
+  	PrintFileInfo(&fileInfo);
+  }
+  else if (S_ISDIR(stat_buf.st_mode))
+  {
+    if (strcmp(direntp->d_name,".") != 0 && strcmp(direntp->d_name,"..") != 0 )
+    {
+      pid = fork();
+      if (pid == -1) return ERROR;
+      if (pid > 0)
+      {
+        //wait(NULL);
+      }
+      else
+      {
+        printf("diretctori:%s\n",direntp->d_name);
+        if (getcwd(cwd, sizeof(cwd)) == NULL)
+          return ERROR;
+        char direc_name[1025]="";
+        strcpy(direc_name,path);
+        strcat(direc_name,"/");
+        strcat(direc_name,direntp->d_name);
+        printf("%s\n",direc_name);
+        printf("filho resultado:%d\n",DirectorySearch(flags,pattern,direc_name));
+        exit(0);
+      }
+    }
+
+  }
+ }
+
+ closedir(dirp);
+ return OK;
+
+}
+
+
+void PrintFileInfo(FileInfo* fileInfo)
+{
+  if (!fileInfo->flags->isdirectory)
+  {
+  	if (fileInfo->numberOfLinesWithPattern == 0)
+  	{
+  		printf("The given pattern was not found\n");
+  		return;
+  	}
+  }
+	if (fileInfo->flags->showFileName)
+	{
+		printf("%s\n", fileInfo->filename);
+		return;
+	}
+
+	if(fileInfo->flags->sowNumberOfLines)
+	{
+    if (fileInfo->flags->isdirectory)
+    {
+      printf("%s: ", fileInfo->filename);
+    }
+		printf("%d\n",fileInfo->numberOfLinesWithPattern );
+		return;
+	}
+
+	int i;
+	for (i = 0; i < fileInfo->numberOfLinesWithPattern; i++)
+	{
+    if (fileInfo->flags->isdirectory)
+      printf("%s: ", fileInfo->filename);
+		if (fileInfo->flags->showLinesNumber)
+			printf("%d : ", fileInfo->lines[i].lineNumber);
+		printf("%s", fileInfo->lines[i].line);
+    if (i == fileInfo->numberOfLinesWithPattern - 1)
+      printf("\n");
+	}
+}
