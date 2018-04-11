@@ -133,6 +133,7 @@ int DirectorySearch(Flags* flags, char*pattern, char* path)
   {
     if (strcmp(direntp->d_name,".") != 0 && strcmp(direntp->d_name,"..") != 0 )
     {
+      printf("here");
       pid = fork();
       if (pid == -1) return ERROR;
       if (pid > 0)
@@ -174,7 +175,9 @@ void PrintFileInfo(FileInfo* fileInfo)
 	if(fileInfo->flags->sowNumberOfLines)
 	{
     if (fileInfo->flags->isdirectory)
+    {
       printf("%s: ", fileInfo->filename);
+    }
 		printf("%d\n",fileInfo->numberOfLinesWithPattern );
 		return;
 	}

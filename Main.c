@@ -26,7 +26,6 @@ int main (int argc, char *argv[]) {
 		printf("Erro na alocação de memoria\n");
 		exit(1);
 	}
-
 	if (flags.isdirectory)
 	{
 		DirectorySearch(&flags, pattern, argv[argc-1]);
