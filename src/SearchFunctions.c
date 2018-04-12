@@ -105,23 +105,23 @@ int DirectorySearch(Flags* flags, char*pattern, char* path)
  struct stat stat_buf;
  int pid;
  char cwd[1024];
- printf("Começei pesquisa\n");
  if ((dirp = opendir(path)) == NULL)
   return ERROR;
-  printf("fixe\n");
  while ((direntp = readdir(dirp)) != NULL)
  {
-   printf("nome ficheiro:%s %s\n",direntp->d_name,path);
-  if (stat(direntp->d_name, &stat_buf)==-1)   // testar com stat()
+   char direc_name[1025]="";
+   strcpy(direc_name,path);
+   strcat(direc_name,"/");
+   strcat(direc_name,direntp->d_name);
+  if (stat(direc_name, &stat_buf)==-1)   // testar com stat()
   {
     printf("error here\n");
     return ERROR;
   }
   if (S_ISREG(stat_buf.st_mode))
   {
-    printf("regular:%s\n",direntp->d_name);
     FileInfo fileInfo;
-  	fileInfo.filename=direntp->d_name;
+  	fileInfo.filename=direc_name;
   	fileInfo.flags=flags;
   	if((fileInfo.lines=malloc(sizeof(*fileInfo.lines)))==NULL)
     {
@@ -149,15 +149,10 @@ int DirectorySearch(Flags* flags, char*pattern, char* path)
       }
       else
       {
-        printf("diretctori:%s\n",direntp->d_name);
         if (getcwd(cwd, sizeof(cwd)) == NULL)
           return ERROR;
-        char direc_name[1025]="";
-        strcpy(direc_name,path);
-        strcat(direc_name,"/");
-        strcat(direc_name,direntp->d_name);
-        printf("%s\n",direc_name);
-        printf("filho resultado:%d\n",DirectorySearch(flags,pattern,direc_name));
+
+          DirectorySearch(flags,pattern,direc_name);
         exit(0);
       }
     }
