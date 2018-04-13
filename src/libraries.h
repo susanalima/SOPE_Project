@@ -14,8 +14,10 @@
  /*
  * @brief Successful function
  */
-#ifndef OK
+#ifndef macros
 #define OK 0
+#define READ 0
+#define WRITE 1
 
  /*
  * @brief Unsuccessful function

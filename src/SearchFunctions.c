@@ -151,8 +151,7 @@ int DirectorySearch(Flags* flags, char*pattern, char* path)
       {
         if (getcwd(cwd, sizeof(cwd)) == NULL)
           return ERROR;
-
-          DirectorySearch(flags,pattern,direc_name);
+        DirectorySearch(flags,pattern,direc_name);
         exit(0);
       }
     }
@@ -161,6 +160,7 @@ int DirectorySearch(Flags* flags, char*pattern, char* path)
  }
 
  closedir(dirp);
+ wait(NULL);
  return OK;
 
 }
@@ -178,7 +178,9 @@ void PrintFileInfo(FileInfo* fileInfo)
   }
 	if (fileInfo->flags->showFileName)
 	{
-		printf("%s\n", fileInfo->filename);
+		//printf("%s\n", fileInfo->filename);
+    write(STDOUT_FILENO, fileInfo->filename,strlen( fileInfo->filename));
+    write(STDOUT_FILENO,"\n",1);
 		return;
 	}
 
@@ -186,9 +188,15 @@ void PrintFileInfo(FileInfo* fileInfo)
 	{
     if (fileInfo->flags->isdirectory)
     {
-      printf("%s: ", fileInfo->filename);
+      //printf("%s: ", fileInfo->filename);
+      write(STDOUT_FILENO, fileInfo->filename,strlen( fileInfo->filename));
+      write(STDOUT_FILENO,": ",2);
     }
-		printf("%d\n",fileInfo->numberOfLinesWithPattern );
+		//printf("%d\n",fileInfo->numberOfLinesWithPattern );
+    char str[12];
+    sprintf(str, "%d", fileInfo->numberOfLinesWithPattern);
+    write(STDOUT_FILENO, str,strlen( str));
+    write(STDOUT_FILENO,"\n",1);
 		return;
 	}
 
@@ -196,11 +204,27 @@ void PrintFileInfo(FileInfo* fileInfo)
 	for (i = 0; i < fileInfo->numberOfLinesWithPattern; i++)
 	{
     if (fileInfo->flags->isdirectory)
-      printf("%s: ", fileInfo->filename);
+    {
+      //printf("%s: ", fileInfo->filename);
+      write(STDOUT_FILENO, fileInfo->filename,strlen( fileInfo->filename));
+      write(STDOUT_FILENO,": ",2);
+    }
 		if (fileInfo->flags->showLinesNumber)
-			printf("%d : ", fileInfo->lines[i].lineNumber);
-		printf("%s", fileInfo->lines[i].line);
+    {
+			//printf("%d : ", fileInfo->lines[i].lineNumber);
+      char str[12];
+      sprintf(str, "%d", fileInfo->lines[i].lineNumber);
+      write(STDOUT_FILENO, str,strlen(str));
+      write(STDOUT_FILENO,": ",2);
+    }
+		//printf("%s", fileInfo->lines[i].line);
+    write(STDOUT_FILENO, fileInfo->lines[i].line,strlen( fileInfo->lines[i].line));
+    //write(STDOUT_FILENO,"\n",1);
     if (i == fileInfo->numberOfLinesWithPattern - 1)
-      printf("\n");
+    {
+      //printf("\n");
+      //write(STDOUT_FILENO, fileInfo->filename,strlen( fileInfo->filename));
+      write(STDOUT_FILENO,"\n",1);
+    }
 	}
 }
