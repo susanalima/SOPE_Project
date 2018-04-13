@@ -1,0 +1,2 @@
+void processSignal();
+void processSignalChild();

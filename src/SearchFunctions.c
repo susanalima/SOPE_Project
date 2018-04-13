@@ -1,5 +1,5 @@
-
 #include "SearchFunctions.h"
+#include "signal.h"
 
 
 //nao devia estar aqui
@@ -149,6 +149,7 @@ int DirectorySearch(Flags* flags, char*pattern, char* path)
       }
       else
       {
+        processSignalChild();
         if (getcwd(cwd, sizeof(cwd)) == NULL)
           return ERROR;
         DirectorySearch(flags,pattern,direc_name);
