@@ -10,6 +10,8 @@
 #include <ctype.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <time.h>
+#include <math.h>
 
  /*
  * @brief Successful function
@@ -35,3 +37,4 @@
  */
 #define FALSE 0
 #endif
+void writeLogFile(pid_t pid,char* string);

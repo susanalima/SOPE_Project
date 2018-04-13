@@ -13,14 +13,6 @@ char* strlwr(char *str)
   return str;
 }
 
-//nao devia estar aqui
-int isDirectory(char* path)
-{
-  struct stat sbuf;
-  if(stat(path,&sbuf) != OK)
-    return 0;
-  return S_ISDIR(sbuf.st_mode); //returns non zero if the file is a directory
-}
 
 
 int LineSearch(Flags* flags, char* pattern, char* line)
@@ -71,6 +63,10 @@ int FileSearch(FileInfo* fileInfo, char* pattern)
 
 	FILE* file;
 	file = fopen(fileInfo->filename,"r");
+  char send[100];
+  strcpy(send,"ABERTO ");
+  strcat(send,fileInfo->filename);
+  writeLogFile(getpid(),send);
 	if(file == NULL) {
 	      perror("Error opening file");
 	      return ERROR;
@@ -93,6 +89,9 @@ int FileSearch(FileInfo* fileInfo, char* pattern)
 			counter++;
 		}
 	}
+  strcpy(send,"FECHADO ");
+  strcat(send,fileInfo->filename);
+  writeLogFile(getpid(),send);
 	fclose(file);
 	fileInfo->numberOfLinesWithPattern = counter;
 	return OK;
@@ -105,6 +104,10 @@ int DirectorySearch(Flags* flags, char*pattern, char* path)
  struct stat stat_buf;
  int pid;
  char cwd[1024];
+ char send[100];
+ strcpy(send,"ABERTO ");
+ strcat(send,path);
+ writeLogFile(getpid(),send);
  if ((dirp = opendir(path)) == NULL)
   return ERROR;
  while ((direntp = readdir(dirp)) != NULL)
@@ -145,7 +148,7 @@ int DirectorySearch(Flags* flags, char*pattern, char* path)
       if (pid == -1) return ERROR;
       if (pid > 0)
       {
-        //wait(NULL);
+        wait(NULL);
       }
       else
       {
@@ -159,7 +162,9 @@ int DirectorySearch(Flags* flags, char*pattern, char* path)
 
   }
  }
-
+ strcpy(send,"FECHADO ");
+ strcat(send,path);
+ writeLogFile(getpid(),send);
  closedir(dirp);
  wait(NULL);
  return OK;
