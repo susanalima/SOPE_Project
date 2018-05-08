@@ -26,38 +26,40 @@ int writen=FALSE;
 
 void *func(void *arg)
 {
-  while(1){
-    //---------------------Abrir semafáro----------------------------------------------
-    sem_t *tsem;
-    tsem=sem_open(SEM_NAME,0,0600,0);
 
-    if(tsem==SEM_FAILED)
-    {
-      perror("Ticket office failure sem_open");
-      exit(1);
-    }
+  //---------------------Abrir semafáro----------------------------------------------
+  sem_t *tsem;
+  tsem=sem_open(SEM_NAME,0,0600,0);
+
+  if(tsem==SEM_FAILED)
+  {
+    perror("Ticket office failure sem_open");
+    exit(1);
+  }
+  //---------------------open the shared memory region ------------------------------------
+  int shmfd1;
+  Request *shm1,*s1,msg1;
+  shmfd1 = shm_open(SHM_NAME,O_RDWR,0600);
+  if(shmfd1<0)
+  {
+    perror("Ticket office failure in shm_open()");
+    exit(1);
+  }
+  //---------------------attach this region to virtual memory-------------------------
+  shm1 = (Request*) mmap(0,SHM_SIZE,PROT_READ|PROT_WRITE,MAP_SHARED,shmfd,0);
+  if(shm1 == MAP_FAILED)
+  {
+    perror("Ticket office failure in mmap()");
+    exit(2);
+  }
+
+
+  while(1){
 
     //espera que fique disponivel
     sem_wait(tsem);
     //espera que esteja uma mensagem no buffer
     while(writen==FALSE){}
-
-    //---------------------open the shared memory region ------------------------------------
-    int shmfd1;
-    Request *shm1,*s1,msg1;
-    shmfd1 = shm_open(SHM_NAME,O_RDWR,0600);
-    if(shmfd1<0)
-    {
-      perror("Ticket office failure in shm_open()");
-      exit(1);
-    }
-    //---------------------attach this region to virtual memory-------------------------
-    shm1 = (Request*) mmap(0,SHM_SIZE,PROT_READ|PROT_WRITE,MAP_SHARED,shmfd,0);
-    if(shm1 == MAP_FAILED)
-    {
-      perror("Ticket office failure in mmap()");
-      exit(2);
-    }
     //------------------ler mensagem------------------------------------------
     s1=shm1;
     msg1=*s1;
@@ -89,6 +91,18 @@ void *func(void *arg)
     close(fd_ans);
     printf("fechey\n");
   }
+
+
+  //----------------------------Fechar semafaro-----------------------------------------
+  sem_close(tsem);
+  //----------------------------Fechar memoria partilhada-------------------------------
+  if(munmap(shm1,SHM_SIZE) < 0)
+  {
+    perror("Ticket office failure munmap");
+    exit(5);
+  }
+
+
   pthread_exit(NULL);
 }
 
