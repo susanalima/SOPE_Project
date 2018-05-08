@@ -1,7 +1,7 @@
 #include "Structures.h"
 
 
-
+//numero total de lugares na sala
 int num_seats;
 int fd_req;
 
@@ -11,7 +11,7 @@ int fd_req;
 
 //server <num_seats> <num_ticket_offices> <open_time>
 
-//numero total de lugares na sala
+
 
 void *func(void *arg)
 {
@@ -24,7 +24,7 @@ int write_to_slog(pid_t pid, Answer* answer)
   return OK;
 }
 
-//NAO PERCEBI
+
 //Cada  uma destas funções, após a  operação de  leitura/escrita do conteúdo de
 //seats, deve  invocar dentro na  secção  crítica  respetiva uma function-like  macro, DELAY(),
 //definida  usando  a  diretiva: #define DELAY()
@@ -105,15 +105,13 @@ int main(int argc, char *argv[])
   int open_time = atoi(argv[3]);
   int num_seats = num_room_seats;
 
-  //pthread_create(&threads[3], NULL, divv, (void*)&td );
-
   pthread_t* ticket_offices = malloc(num_ticket_offices * sizeof(pthread_t));
 
-  int i;
+/*  int i;
   for (i = 0; i < num_ticket_offices; i++)
   {
     pthread_create(&ticket_offices[i], NULL, func);
-  }
+  }*/
 
   //creates the fifo requests
   if (mkfifo("/tmp/requests",0660)<0)

@@ -43,17 +43,6 @@ int write_to_clog(pid_t pid, Answer* answer)
 	return OK;
 }
 
-/*
-	char* token;
-	token = strtok(argv[3]," ");
-	while(token != NULL)
-	{
-		printf("%d\n",atoi(token));
-		token = strtok(NULL, " ");
-	}
-
-*/
-
 void clientTimeOut(int signo)
 {
 	printf("time out\n");
@@ -73,13 +62,28 @@ int main(int argc, char *argv[])
 	Answer answer;
   request.time_out = atoi(argv[1]);
   request.num_wanted_seats = atoi(argv[2]);
-  request.pref_seat_list = malloc(sizeof(*argv[3])+1);
-  memset(request.pref_seat_list, '\n', sizeof(*argv[3]));
-  strcpy(request.pref_seat_list, argv[3]);
+  //request.pref_seat_list = malloc(sizeof(*argv[3])+1);
+  //memset(request.pref_seat_list, '\n', sizeof(*argv[3]));
+  //strcpy(request.pref_seat_list, argv[3]);
   pid_t pid = getpid();
 	request.pid = pid;
   char fanswer[20];
   sprintf(fanswer,"/tmp/ans%d", pid);
+
+
+	request.pref_seat_list = malloc(sizeof(int));
+	int count = 0;
+	char* token;
+	token = strtok(argv[3]," ");
+	request.pref_seat_list[0] = atoi(token);
+	while(token != NULL)
+	{
+		count++;
+		request.pref_seat_list = realloc(request.pref_seat_list,count*sizeof(int));
+		request.pref_seat_list[count] = atoi(token);
+		token = strtok(NULL, " ");
+	}
+
 
   //creates the fifo ansXXXXX
   if (mkfifo(fanswer,0660)<0)
@@ -99,26 +103,17 @@ int main(int argc, char *argv[])
 	write(fd_req, &request, sizeof(Request));
 	close(fd_req);
 
-	//FALTA A CENA DO TIME OUT
-
 	signal(SIGALRM,clientTimeOut);
 	alarm(request.time_out);
 
 
 		//opens the answer fifo
-		int fd_ans = open(fanswer, O_RDONLY);
-		read(fd_ans, &answer, sizeof(Answer));
-		close(fd_ans);
-		printf("%d\n",answer.num_seats);
-		write_to_clog(request.pid, &answer);
-
-/*
 	int fd_ans = open(fanswer, O_RDONLY);
 	read(fd_ans, &answer, sizeof(Answer));
 	close(fd_ans);
-
+	printf("%d\n",answer.num_seats);
 	write_to_clog(request.pid, &answer);
-*/
+
 
    //destroys the fifo ansXXXXX
   if(unlink(fanswer)<0)

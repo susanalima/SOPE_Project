@@ -6,8 +6,8 @@ typedef struct
 	pid_t pid;
 	int time_out;
   int num_wanted_seats;
-  char* pref_seat_list; //passar como array de inteiros
-	//int* pref_seat_list;
+  //char* pref_seat_list; //passar como array de inteiros
+	int* pref_seat_list;
 } Request;
 
 
