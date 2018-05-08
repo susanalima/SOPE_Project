@@ -181,6 +181,7 @@ int main(int argc, char *argv[])
   {
     pthread_create(&ticket_offices[i], NULL, func,NULL);
   }
+
   //-------------------creates the fifo requests------------------------------------
   if (mkfifo("/tmp/requests",0660)<0)
   if(errno==EEXIST) printf("FIFO already exists\n");

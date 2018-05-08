@@ -73,5 +73,7 @@
 #define WIDTH_XXNN  5
 #define WIDTH_SEAT 4
 
+#define DELAY(i)  sleep(i) //todo
+
 
 #endif

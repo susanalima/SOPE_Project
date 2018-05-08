@@ -6,13 +6,26 @@
 
 int isSeatFree(Seat *seats, int seatNum)
 {
-  return 0;
+  DELAY(1);
+  return(seats[seatNum-1].is_free);
 }
 
 void bookSeat(Seat *seats, int seatNum, int clientId)
 {
+  DELAY(1.5);
+  if(isSeatFree(seats, seatNum) == TRUE)
+  {
+    seats[seatNum-1].clientId = clientId;
+    seats[seatNum-1].is_free = FALSE;
+  }
 }
 
 void freeSeat(Seat *seats, int seatNum)
 {
+  DELAY(1.5);
+  if(isSeatFree(seats, seatNum) == FALSE)
+  {
+    seats[seatNum-1].clientId = -1;
+    seats[seatNum-1].is_free = TRUE;
+  }
 }
