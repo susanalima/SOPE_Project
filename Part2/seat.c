@@ -12,20 +12,24 @@ int isSeatFree(Seat *seats, int seatNum)
 
 void bookSeat(Seat *seats, int seatNum, int clientId)
 {
-  DELAY(1.5);
-  if(isSeatFree(seats, seatNum) == TRUE)
-  {
+    DELAY(1.5);
     seats[seatNum-1].clientId = clientId;
     seats[seatNum-1].is_free = FALSE;
-  }
+
 }
 
 void freeSeat(Seat *seats, int seatNum)
 {
-  DELAY(1.5);
-  if(isSeatFree(seats, seatNum) == FALSE)
-  {
+    DELAY(1.5);
     seats[seatNum-1].clientId = -1;
     seats[seatNum-1].is_free = TRUE;
+  
+}
+
+void freeAllSeats(Seat *seats, int* seq, int size)
+{
+  for (int i = 0; i < size; i++)
+  {
+    freeSeat(seats, seq[i]);
   }
 }

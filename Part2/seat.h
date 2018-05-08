@@ -5,3 +5,4 @@
 int isSeatFree(Seat *seats, int seatNum);
 void bookSeat(Seat *seats, int seatNum, int clientId);
 void freeSeat(Seat *seats, int seatNum);
+void freeAllSeats(Seat *seats, int* seq, int size);

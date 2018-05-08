@@ -9,9 +9,10 @@ typedef struct
 {
 	pid_t pid;
 	int time_out;
-  int num_wanted_seats;
+  	int num_wanted_seats;
   //char* pref_seat_list; //passar como array de inteiros
 	int* pref_seat_list;
+	int size;
 } Request;
 
 
@@ -19,7 +20,7 @@ typedef struct
 {
 	int valid_request;
 	int num_seats;
-	//int* seq;
+	int* seq;
 } Answer;
 
 

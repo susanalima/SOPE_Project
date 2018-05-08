@@ -44,6 +44,7 @@ int main(int argc, char *argv[])
 		token = strtok(NULL, " ");
 	}
 
+	request.size = count; //acho que e isto
 
   //creates the fifo ansXXXXX
   if (mkfifo(fanswer,0660)<0)
@@ -71,8 +72,11 @@ int main(int argc, char *argv[])
 	int fd_ans = open(fanswer, O_RDONLY);
 	read(fd_ans, &answer, sizeof(Answer));
 	close(fd_ans);
-	printf("%d\n",answer.num_seats);
+
 	write_to_clog(request.pid, &answer);
+
+	printf("%d\n", answer.num_seats);
+	printf("%d\n", answer.valid_request);
 
 
    //destroys the fifo ansXXXXX
