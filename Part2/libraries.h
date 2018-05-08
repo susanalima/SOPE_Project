@@ -65,6 +65,7 @@
 #define ERR -4
 #define NAV -5
 #define FUL -6
+#define OUT -7
 
 
 #define MAX_ROOM_SEAT 9999

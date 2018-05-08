@@ -3,9 +3,16 @@
 #include "logs.h"
 
 
+char OUT_SEM_NAME[] = "/sem3";
+
+ pid_t pid;
+
 void clientTimeOut(int signo)
 {
 	printf("time out\n");
+	Answer answer;
+	answer.valid_request = OUT;
+	write_to_clog(pid,&answer);
 	exit(1);
 }
 
@@ -18,6 +25,15 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
+	sem_t * outsem;
+	outsem= sem_open(OUT_SEM_NAME,O_CREAT,0600,0);  
+  if(outsem == SEM_FAILED)
+  {
+    perror("Server failed to create semafaro\n");
+    exit(4);
+  }
+
+
 	Request request;
 	Answer answer;
   request.time_out = atoi(argv[1]);
@@ -25,14 +41,14 @@ int main(int argc, char *argv[])
   //request.pref_seat_list = malloc(sizeof(*argv[3])+1);
   //memset(request.pref_seat_list, '\n', sizeof(*argv[3]));
   //strcpy(request.pref_seat_list, argv[3]);
-  pid_t pid = getpid();
+ 	pid = getpid();
 	request.pid = pid;
   char fanswer[20];
   sprintf(fanswer,"/tmp/ans%d", pid);
 
 
 	request.pref_seat_list = malloc(sizeof(int));
-	int count = 0;
+	int count = 1;
 	char* token;
 	token = strtok(argv[3]," ");
 	request.pref_seat_list[0] = atoi(token);
@@ -40,11 +56,15 @@ int main(int argc, char *argv[])
 	{
 		count++;
 		request.pref_seat_list = realloc(request.pref_seat_list,count*sizeof(int));
-		request.pref_seat_list[count] = atoi(token);
 		token = strtok(NULL, " ");
+		if(token == NULL)
+			break;
+		request.pref_seat_list[count-1] = atoi(token);
 	}
 
-	request.size = count; //acho que e isto
+
+	request.size = count-1; //acho que e isto
+	printf("%d v\n\n",request.size);
 
   //creates the fifo ansXXXXX
   if (mkfifo(fanswer,0660)<0)
@@ -61,11 +81,22 @@ int main(int argc, char *argv[])
 	   printf("Oops !!! Service is closed !!!\n");
 	   exit(2);
 	}
-	write(fd_req, &request, sizeof(Request));
-	close(fd_req);
 
 	signal(SIGALRM,clientTimeOut);
 	alarm(request.time_out);
+
+	sem_wait(outsem);
+
+	write(fd_req, &request, sizeof(request));
+
+	write(fd_req, request.pref_seat_list, sizeof(int)*request.size+1);
+
+	close(fd_req);
+
+	sem_post(outsem);
+
+
+
 
 
 		//opens the answer fifo
@@ -84,5 +115,7 @@ int main(int argc, char *argv[])
     printf("Error when destroying FIFO \n");
   else
     printf("FIFO has been destroyed\n");
+
+	sem_close(outsem);
   exit(0);
 }

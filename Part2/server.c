@@ -9,6 +9,7 @@
 char SHM_NAME[]="/shm1";
 char SEM_NAME[]="/sem1";
 char OTHER_SEM_NAME[] = "/sem2";
+char OUT_SEM_NAME[] = "/sem3";
 //numero total de lugares na sala
 
 int writen=FALSE;
@@ -25,6 +26,7 @@ int num_seats;
 
 int verifySeat(int number)
 {
+  printf("%d %d\n", number, num_seats);
   if (number > num_seats)
     return IID;
   if (number > MAX_CLI_SEATS)
@@ -36,6 +38,7 @@ int verifySeat(int number)
 
 int verifyRequest(Request* request)
 {
+  printf("%d\n", request->size);
   if (request->size < request->num_wanted_seats)
     return IID;
     
@@ -47,6 +50,7 @@ int verifyRequest(Request* request)
   
   for (int i = 0; i < request->size; i++)
   {
+    printf("hi1\n");
     if (verifySeat(request->pref_seat_list[i]) != OK)
       return IID;
   }
@@ -118,6 +122,7 @@ void *func(void *arg)
 
     int count = 0;
     int valid_request = verifyRequest(&request);
+
     if (valid_request == OK)
     {
       printf("hi1\n");
@@ -149,9 +154,10 @@ void *func(void *arg)
       }
 
     }
-
+    printf("hi6\n");
     answer.valid_request = valid_request;
     answer.num_seats = count; //pode nao ser
+
 
 
     int fd_ans = open(fanswer,O_WRONLY);
@@ -209,7 +215,7 @@ int main(int argc, char *argv[])
   int shmfd;
   Request *shm, *s;
   int fd_req;
-  sem_t *sem, *othersem;
+  sem_t *sem, *othersem, *outsem;
   //cria a sala
   seats = malloc(num_room_seats*sizeof(Seat));
 
@@ -261,7 +267,13 @@ int main(int argc, char *argv[])
   }
   sem_post(othersem);
 
-
+  outsem= sem_open(OUT_SEM_NAME,O_CREAT,0600,0);  
+  if(outsem == SEM_FAILED)
+  {
+    perror("Server failed to create semafaro\n");
+    exit(4);
+  }
+  sem_post(outsem);
 
 
   //------------------Criar threads---------------------------------------------------
@@ -292,7 +304,16 @@ int main(int argc, char *argv[])
 
   while(flag == FALSE){
     Request request;
-    if(read(fd_req, &request, sizeof(Request))<=0)continue;
+    //request.pref_seat_list = malloc(4*sizeof(int));
+    if(read(fd_req, &request, sizeof(request))<=0)continue;
+    request.pref_seat_list = malloc(request.size * sizeof(int)+1);
+    read(fd_req, request.pref_seat_list, request.size * sizeof(int)+1);
+
+    for (int i = 0; i < 3; i++)
+      printf("%d\n", request.pref_seat_list[i]);
+      
+  
+
     while(writen==TRUE){}
 
     s = shm;
@@ -309,6 +330,9 @@ int main(int argc, char *argv[])
    printf("Error when destroying FIFO '/tmp/requests'\n");
   else
    printf("FIFO '/tmp/requests' has been destroyed\n");
+
+  sem_close(outsem);
+  sem_unlink(OUT_SEM_NAME);
 
   sem_close(sem);
   sem_unlink(SEM_NAME);
