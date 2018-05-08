@@ -1,5 +1,6 @@
 #include "Structures.h"
-
+#include "seat.h"
+#include "logs.h"
 
 //numero total de lugares na sala
 int num_seats;
@@ -18,57 +19,6 @@ void *func(void *arg)
 
 }
 
-//todo
-int write_to_slog(pid_t pid, Answer* answer)
-{
-  return OK;
-}
-
-
-//Cada  uma destas funções, após a  operação de  leitura/escrita do conteúdo de
-//seats, deve  invocar dentro na  secção  crítica  respetiva uma function-like  macro, DELAY(),
-//definida  usando  a  diretiva: #define DELAY()
-
-int isSeatFree(Seat *seats, int seatNum)
-{
-  int i;
-  for (i = 0; i < num_seats; i++)
-  {
-    if (seats[i].number == seatNum)
-    {
-      return (seats[i].is_free);
-    }
-  }
-  return ERROR;
-}
-
-void bookSeat(Seat *seats, int seatNum, int clientId)
-{
-  int i;
-  for (i = 0; i < num_seats; i++)
-  {
-    if (seats[i].number == seatNum)
-    {
-      seats[i].clientId = clientId;
-      seats[i].is_free = FALSE;
-      return;
-    }
-  }
-}
-
-void freeSeat(Seat *seats, int seatNum)
-{
-  int i;
-  for (i = 0; i < num_seats; i++)
-  {
-    if (seats[i].number == seatNum)
-    {
-      seats[i].clientId = 0;
-      seats[i].is_free = TRUE;
-      return;
-    }
-  }
-}
 
 
 int verifyRequest(Request* request)
@@ -95,11 +45,14 @@ void timeOut(int signo)
 
 int main(int argc, char *argv[])
 {
+
+  // Verificar se os parametros estão corretos
   if (argc < 4)
   {
     perror("ERROR");
     exit(1);
   }
+  // Variaveis do programa server
   int num_room_seats = atoi(argv[1]);
   int num_ticket_offices = atoi(argv[2]);
   int open_time = atoi(argv[3]);
@@ -113,7 +66,7 @@ int main(int argc, char *argv[])
     pthread_create(&ticket_offices[i], NULL, func);
   }*/
 
-  //creates the fifo requests
+  // creates the fifo requests
   if (mkfifo("/tmp/requests",0660)<0)
   if(errno==EEXIST) printf("FIFO already exists\n");
   else
@@ -121,7 +74,7 @@ int main(int argc, char *argv[])
   else
     printf("FIFO sucessfully created\n");
 
-  //reads a request
+  // reads a request
   signal(SIGALRM,timeOut);
   alarm(open_time);
   fd_req = open("/tmp/requests",O_RDONLY);
@@ -130,26 +83,26 @@ int main(int argc, char *argv[])
     Request request;
     Answer answer;
     char fanswer[20];
-   if(read(fd_req, &request, sizeof(Request))<=0)continue;
-   printf("Servidor leu\n");
-   printf("%d\n",request.time_out);
-   sprintf(fanswer,"/tmp/ans%d", request.pid);
+    if(read(fd_req, &request, sizeof(Request))<=0)continue;
+    printf("Servidor leu\n");
+    printf("%d\n",request.time_out);
+    sprintf(fanswer,"/tmp/ans%d", request.pid);
 
-   answer.valid_request = 0;
-   answer.num_seats = 3;
+    answer.valid_request = 0;
+    answer.num_seats = 3;
 
 
-   int fd_ans = open(fanswer,O_WRONLY);
-   printf("Abriu servidor de resposta\n");
-   if(fd_ans == -1) {
+    int fd_ans = open(fanswer,O_WRONLY);
+    printf("Abriu servidor de resposta\n");
+    if(fd_ans == -1) {
       printf("Oops !!! Service is closed !!!\n");
       exit(2);
-   }
-   write(fd_ans, &answer, sizeof(Answer));
-   printf("Escrevey\n");
-   close(fd_ans);
-   printf("fechey\n");
- }
+    }
+    write(fd_ans, &answer, sizeof(Answer));
+    printf("Escrevey\n");
+    close(fd_ans);
+    printf("fechey\n");
+  }
 
 
 

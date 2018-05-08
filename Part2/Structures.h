@@ -1,3 +1,7 @@
+#ifndef STRUCTURES
+#define STRUCTURES
+
+
 #include "libraries.h"
 
 
@@ -25,3 +29,6 @@ typedef struct
 	int is_free; // TRUE OR FALSE
 	int clientId;
 } Seat;
+
+
+#endif
