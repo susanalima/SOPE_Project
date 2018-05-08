@@ -15,6 +15,8 @@
 #include <errno.h>
 #include <pthread.h>
 #include <sys/syscall.h>
+#include <sys/mman.h>
+#include <semaphore.h>
 
 
 #ifndef macros
