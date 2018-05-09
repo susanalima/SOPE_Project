@@ -41,16 +41,15 @@ int verifyRequest(Request* request)
   printf("%d\n", request->size);
   if (request->size < request->num_wanted_seats)
     return IID;
-    
+
   if (request->num_wanted_seats < 1 || request->num_wanted_seats > MAX_CLI_SEATS)
      return MAX;
 
   if (request->size > num_seats || request->num_wanted_seats > num_seats)
     return NST;
-  
+
   for (int i = 0; i < request->size; i++)
   {
-    printf("hi1\n");
     if (verifySeat(request->pref_seat_list[i]) != OK)
       return IID;
   }
@@ -125,22 +124,17 @@ void *func(void *arg)
 
     if (valid_request == OK)
     {
-      printf("hi1\n");
       answer.seq = malloc(request.num_wanted_seats*sizeof(int));
-      printf("hi2\n");
       for(int i = 0; i < request.size; i++)
       {
         sem_wait(book_sem);
-        printf("hi3\n");
         if (isSeatFree(seats, request.pref_seat_list[i]))
         {
-          printf("hi4\n");
           bookSeat(seats,request.pref_seat_list[i], request.pid);
           answer.seq[i] = request.pref_seat_list[i];
-          count++; 
+          count++;
         }
         sem_post(book_sem);
-         printf("hi5\n");
         if (count == request.num_wanted_seats)
           break;
       }
@@ -149,27 +143,29 @@ void *func(void *arg)
       {
         sem_wait(book_sem);
         freeAllSeats(seats, answer.seq, count);
-          printf("hi6\n");
+        count = 0;
+        valid_request = NAV;
         sem_post(book_sem);
       }
 
     }
-    printf("hi6\n");
     answer.valid_request = valid_request;
     answer.num_seats = count; //pode nao ser
 
 
 
     int fd_ans = open(fanswer,O_WRONLY);
-    printf("Abriu servidor de resposta\n");
+    //printf("Abriu servidor de resposta\n");
     if(fd_ans == -1) {
       printf("Oops !!! Service is closed !!!\n");
       exit(2);
     }
     write(fd_ans, &answer, sizeof(Answer));
-    printf("Escrevey\n");
+    //printf("Escrevey\n");
     close(fd_ans);
-    printf("fechey\n");
+    //printf("fechey\n");
+
+    write_to_slog(request.pid, *(int*)arg, &request, &answer);
   }
 
 
@@ -209,8 +205,14 @@ int main(int argc, char *argv[])
   int num_ticket_offices = atoi(argv[2]);
   int open_time = atoi(argv[3]);
   num_seats = num_room_seats;
-  
 
+  //deletes existing files
+  remove("clog.txt");
+  remove("cbook.txt");
+  remove("slog.txt");
+  remove("sbook.txt");
+
+  open_slog();
 
   int shmfd;
   Request *shm, *s;
@@ -222,7 +224,7 @@ int main(int argc, char *argv[])
   for (int j = 0; j < num_room_seats; j++)
   {
     Seat seat;
-    seat.is_free = FALSE;
+    seat.is_free = TRUE;
     seat.clientId = -1;
     seat.number = j+1;
     seats[j] = seat;
@@ -267,7 +269,7 @@ int main(int argc, char *argv[])
   }
   sem_post(othersem);
 
-  outsem= sem_open(OUT_SEM_NAME,O_CREAT,0600,0);  
+  outsem= sem_open(OUT_SEM_NAME,O_CREAT,0600,0);
   if(outsem == SEM_FAILED)
   {
     perror("Server failed to create semafaro\n");
@@ -280,10 +282,12 @@ int main(int argc, char *argv[])
   pthread_t* ticket_offices = malloc(num_ticket_offices * sizeof(pthread_t));
 
   int i;
-  void *re;
+  int* t_arg = malloc(num_ticket_offices*sizeof(int));
   for (i = 0; i < num_ticket_offices; i++)
   {
-    pthread_create(&ticket_offices[i], NULL, func,NULL);
+    t_arg[i] = i+1;
+    pthread_create(&ticket_offices[i], NULL, func,(void*)&t_arg[i]);
+    write_open_ticketOffice(t_arg[i]);
   }
 
   //------------------Criar alarme---------------------------------------------------
@@ -311,8 +315,8 @@ int main(int argc, char *argv[])
 
     for (int i = 0; i < 3; i++)
       printf("%d\n", request.pref_seat_list[i]);
-      
-  
+
+
 
     while(writen==TRUE){}
 
@@ -350,6 +354,11 @@ int main(int argc, char *argv[])
     perror("Server failure shm_unlink\n");
     exit(5);
   }
+
+  close_slog();
+  //writes to sbook
+  write_to_sbook(seats, num_room_seats);
+
   printf("Servidor fechou. Timed out\n");
   exit(0);
 

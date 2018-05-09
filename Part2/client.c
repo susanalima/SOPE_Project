@@ -26,12 +26,13 @@ int main(int argc, char *argv[])
 	}
 
 	sem_t * outsem;
-	outsem= sem_open(OUT_SEM_NAME,O_CREAT,0600,0);  
+	outsem= sem_open(OUT_SEM_NAME,O_CREAT,0600,0);
   if(outsem == SEM_FAILED)
   {
     perror("Server failed to create semafaro\n");
     exit(4);
   }
+
 
 
 	Request request;
@@ -104,10 +105,15 @@ int main(int argc, char *argv[])
 	read(fd_ans, &answer, sizeof(Answer));
 	close(fd_ans);
 
+  //writes to clog
 	write_to_clog(request.pid, &answer);
 
-	printf("%d\n", answer.num_seats);
-	printf("%d\n", answer.valid_request);
+  //writes to cbook
+  if(answer.valid_request == TRUE)
+    write_to_cbook(answer.seq, answer.num_seats);
+
+	//printf("%d\n", answer.num_seats);
+//	printf("%d\n", answer.valid_request);
 
 
    //destroys the fifo ansXXXXX
@@ -117,5 +123,7 @@ int main(int argc, char *argv[])
     printf("FIFO has been destroyed\n");
 
 	sem_close(outsem);
+
+
   exit(0);
 }
