@@ -26,8 +26,11 @@ void  write_to_slog(pid_t pid, int to_number, Request* request, Answer* answer)
 
 	for (int i = 0; i < request->size; i++)
 	{
-		char temp[6];
-		sprintf(temp, "%.*d ",WIDTH_SEAT,request->pref_seat_list[i]);
+		char temp[9];
+		if(i == request->size -1)
+			sprintf(temp, "%.*d - ",WIDTH_SEAT,request->pref_seat_list[i]);
+		else
+			sprintf(temp, "%.*d ",WIDTH_SEAT,request->pref_seat_list[i]);
 		strcat(to_write,temp);
 	}
 

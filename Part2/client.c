@@ -25,14 +25,6 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	sem_t * outsem;
-	outsem= sem_open(OUT_SEM_NAME,O_CREAT,0600,0);
-  if(outsem == SEM_FAILED)
-  {
-    perror("Server failed to create semafaro\n");
-    exit(4);
-  }
-
 
 
 	Request request;
@@ -48,23 +40,28 @@ int main(int argc, char *argv[])
   sprintf(fanswer,"/tmp/ans%d", pid);
 
 
-	request.pref_seat_list = malloc(sizeof(int));
+	//request.pref_seat_list = malloc(sizeof(int));
+
+  int tmp_seats[MAX_CLI_SEATS];
 	int count = 1;
 	char* token;
 	token = strtok(argv[3]," ");
-	request.pref_seat_list[0] = atoi(token);
+	//request.pref_seat_list[0] = atoi(token);
+  tmp_seats[0] = atoi(token);
 	while(token != NULL)
 	{
 		count++;
-		request.pref_seat_list = realloc(request.pref_seat_list,count*sizeof(int));
+		//request.pref_seat_list = realloc(request.pref_seat_list,count*sizeof(int));
 		token = strtok(NULL, " ");
 		if(token == NULL)
 			break;
-		request.pref_seat_list[count-1] = atoi(token);
+		//request.pref_seat_list[count-1] = atoi(token);
+    tmp_seats[count-1] = atoi(token);
 	}
 
 
 	request.size = count-1; //acho que e isto
+  memcpy(request.pref_seat_list,tmp_seats,request.size*sizeof(int));
 	printf("%d v\n\n",request.size);
 
   //creates the fifo ansXXXXX
@@ -86,15 +83,11 @@ int main(int argc, char *argv[])
 	signal(SIGALRM,clientTimeOut);
 	alarm(request.time_out);
 
-	sem_wait(outsem);
-
 	write(fd_req, &request, sizeof(request));
 
-	write(fd_req, request.pref_seat_list, sizeof(int)*request.size+1);
+//	write(fd_req, request.pref_seat_list, sizeof(int)*request.size+1);
 
 	close(fd_req);
-
-	sem_post(outsem);
 
 
 
@@ -115,6 +108,9 @@ int main(int argc, char *argv[])
 	//printf("%d\n", answer.num_seats);
 //	printf("%d\n", answer.valid_request);
 
+  for (int k = 0; k < answer.num_seats; k++)
+    printf("%d\n", answer.seq[k]);
+
 
    //destroys the fifo ansXXXXX
   if(unlink(fanswer)<0)
@@ -122,7 +118,6 @@ int main(int argc, char *argv[])
   else
     printf("FIFO has been destroyed\n");
 
-	sem_close(outsem);
 
 
   exit(0);

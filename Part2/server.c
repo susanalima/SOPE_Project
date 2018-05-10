@@ -4,8 +4,6 @@
 
 #define SHM_SIZE 1
 
-
-
 char SHM_NAME[]="/shm1";
 char SEM_NAME[]="/sem1";
 char OTHER_SEM_NAME[] = "/sem2";
@@ -104,7 +102,12 @@ void *func(void *arg)
     //espera que fique disponivel
     sem_wait(tsem);
     //espera que esteja uma mensagem no buffer
-    while(writen==FALSE){}
+    while(writen==FALSE && flag == FALSE){}
+    if(flag==TRUE)
+    {
+      sem_post(tsem);
+      break;
+    }
     //------------------ler mensagem------------------------------------------
     s1=shm1;
     msg1=*s1;
@@ -115,55 +118,63 @@ void *func(void *arg)
     Request request=msg1;
     Answer answer;
     char fanswer[20];
-    printf("Servidor leu\n");
-    printf("%d\n",request.time_out);
     sprintf(fanswer,"/tmp/ans%d", request.pid);
 
-    int count = 0;
+    int count_invalido = request.size;
+    int count_valido = 0;
     int valid_request = verifyRequest(&request);
 
     if (valid_request == OK)
     {
-      answer.seq = malloc(request.num_wanted_seats*sizeof(int));
+      //answer.seq = malloc(request.num_wanted_seats*sizeof(int));
       for(int i = 0; i < request.size; i++)
       {
+        printf("sem_wait %lu\n",pthread_self());
         sem_wait(book_sem);
+        printf("sem_wait finish %lu\n",pthread_self());
         if (isSeatFree(seats, request.pref_seat_list[i]))
         {
           bookSeat(seats,request.pref_seat_list[i], request.pid);
           answer.seq[i] = request.pref_seat_list[i];
-          count++;
+          count_valido++;
         }
+        else{
+          count_invalido--;
+        }
+        printf("sem_post %lu\n",pthread_self());
         sem_post(book_sem);
-        if (count == request.num_wanted_seats)
+        printf("sem_post finish %lu\n",pthread_self());
+        if (count_invalido < request.num_wanted_seats || count_valido>=request.num_wanted_seats)
           break;
       }
 
-      if (count != request.num_wanted_seats)
+      if (count_invalido < request.num_wanted_seats)
       {
         sem_wait(book_sem);
-        freeAllSeats(seats, answer.seq, count);
-        count = 0;
+        freeAllSeats(seats, answer.seq,count_valido);
+        count_valido = 0;
         valid_request = NAV;
         sem_post(book_sem);
       }
 
     }
     answer.valid_request = valid_request;
-    answer.num_seats = count; //pode nao ser
+    answer.num_seats = count_valido; //pode nao ser
 
 
 
-    int fd_ans = open(fanswer,O_WRONLY);
-    //printf("Abriu servidor de resposta\n");
+    int fd_ans = open(fanswer,O_WRONLY | O_NONBLOCK );
     if(fd_ans == -1) {
-      printf("Oops !!! Service is closed !!!\n");
-      exit(2);
+      printf("Oops !!! Cliente fifo doesn't exist!!!\n");
+      sem_wait(book_sem);
+      freeAllSeats(seats, answer.seq,answer.num_seats);
+      sem_post(book_sem);
     }
-    write(fd_ans, &answer, sizeof(Answer));
-    //printf("Escrevey\n");
-    close(fd_ans);
-    //printf("fechey\n");
+    else
+    {
+      write(fd_ans, &answer, sizeof(Answer));
+      close(fd_ans);
+    }
 
     write_to_slog(request.pid, *(int*)arg, &request, &answer);
   }
@@ -217,7 +228,7 @@ int main(int argc, char *argv[])
   int shmfd;
   Request *shm, *s;
   int fd_req;
-  sem_t *sem, *othersem, *outsem;
+  sem_t *sem, *othersem;
   //cria a sala
   seats = malloc(num_room_seats*sizeof(Seat));
 
@@ -229,7 +240,7 @@ int main(int argc, char *argv[])
     seat.number = j+1;
     seats[j] = seat;
   }
-
+  
   //----------------------Memoria Partilhada-------------------------------------------------
   shmfd = shm_open(SHM_NAME,O_CREAT|O_RDWR,0600);
   if(shmfd<0)
@@ -258,9 +269,6 @@ int main(int argc, char *argv[])
     exit(4);
   }
   sem_post(sem);
-
-
-
   othersem= sem_open(OTHER_SEM_NAME,O_CREAT,0600,0);
   if(othersem == SEM_FAILED)
   {
@@ -268,15 +276,6 @@ int main(int argc, char *argv[])
     exit(4);
   }
   sem_post(othersem);
-
-  outsem= sem_open(OUT_SEM_NAME,O_CREAT,0600,0);
-  if(outsem == SEM_FAILED)
-  {
-    perror("Server failed to create semafaro\n");
-    exit(4);
-  }
-  sem_post(outsem);
-
 
   //------------------Criar threads---------------------------------------------------
   pthread_t* ticket_offices = malloc(num_ticket_offices * sizeof(pthread_t));
@@ -289,7 +288,6 @@ int main(int argc, char *argv[])
     pthread_create(&ticket_offices[i], NULL, func,(void*)&t_arg[i]);
     write_open_ticketOffice(t_arg[i]);
   }
-
   //------------------Criar alarme---------------------------------------------------
   signal(SIGALRM,timeOut);
   alarm(open_time);
@@ -310,11 +308,12 @@ int main(int argc, char *argv[])
     Request request;
     //request.pref_seat_list = malloc(4*sizeof(int));
     if(read(fd_req, &request, sizeof(request))<=0)continue;
-    request.pref_seat_list = malloc(request.size * sizeof(int)+1);
-    read(fd_req, request.pref_seat_list, request.size * sizeof(int)+1);
 
-    for (int i = 0; i < 3; i++)
-      printf("%d\n", request.pref_seat_list[i]);
+    //request.pref_seat_list = malloc(request.size * sizeof(int)+1);
+    //read(fd_req, request.pref_seat_list, request.size * sizeof(int)+1);
+
+    /*for (int i = 0; i < request.size; i++)
+      printf("%d\n", request.pref_seat_list[i]);*/
 
 
 
@@ -335,8 +334,6 @@ int main(int argc, char *argv[])
   else
    printf("FIFO '/tmp/requests' has been destroyed\n");
 
-  sem_close(outsem);
-  sem_unlink(OUT_SEM_NAME);
 
   sem_close(sem);
   sem_unlink(SEM_NAME);
@@ -359,7 +356,12 @@ int main(int argc, char *argv[])
   //writes to sbook
   write_to_sbook(seats, num_room_seats);
 
-  printf("Servidor fechou. Timed out\n");
+  printf("Server TimeOut. Waiting for ticket offices to close\n");
+  for (i = 0; i < num_ticket_offices; i++)
+  {
+    pthread_join(ticket_offices[i],NULL);
+  }
+
   exit(0);
 
 }
