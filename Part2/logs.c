@@ -90,6 +90,11 @@ void write_close_ticketOffice(int num)
 	write_string_to_slog(to_write);
 }
 
+void write_close_server()
+{
+	write_string_to_slog("SERVER CLOSED\n");
+}
+
 
 
 int write_to_clog(pid_t pid, Answer* answer)
@@ -130,7 +135,8 @@ int write_to_clog(pid_t pid, Answer* answer)
 		printf("here\n");
 			for (int i = 0; i < answer->num_seats; i++)
 			{
-				sprintf(to_write, "%.*d %.*d.%.*d %*.d\n",WIDTH_PID,pid, WIDTH_XXNN, i+1, WIDTH_XXNN, answer->num_seats,WIDTH_SEAT,answer->seq[i]);
+				//tem um erro XX.NN : esta a funcionar e faz sentido mas nao sei se é a melhor forma
+				sprintf(to_write, "%.*d %.*d.%.*d %.*d\n",WIDTH_PID,pid, (WIDTH_XXNN-1)/2, i+1, (WIDTH_XXNN-1)/2, answer->num_seats,WIDTH_SEAT,answer->seq[i]);
 				write(fd2, to_write, strlen(to_write));
 			}
 			s = TRUE;

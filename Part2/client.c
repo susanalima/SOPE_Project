@@ -3,7 +3,7 @@
 #include "logs.h"
 
 
-char OUT_SEM_NAME[] = "/sem3";
+//char OUT_SEM_NAME[] = "/sem3";
 
  pid_t pid;
 
@@ -31,9 +31,7 @@ int main(int argc, char *argv[])
 	Answer answer;
   request.time_out = atoi(argv[1]);
   request.num_wanted_seats = atoi(argv[2]);
-  //request.pref_seat_list = malloc(sizeof(*argv[3])+1);
-  //memset(request.pref_seat_list, '\n', sizeof(*argv[3]));
-  //strcpy(request.pref_seat_list, argv[3]);
+
  	pid = getpid();
 	request.pid = pid;
   char fanswer[20];
@@ -102,7 +100,7 @@ int main(int argc, char *argv[])
 	write_to_clog(request.pid, &answer);
 
   //writes to cbook
-  if(answer.valid_request == TRUE)
+  if(answer.valid_request == OK)
     write_to_cbook(answer.seq, answer.num_seats);
 
 	//printf("%d\n", answer.num_seats);

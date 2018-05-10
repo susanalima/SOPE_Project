@@ -1,5 +1,3 @@
-
-
 #include "Structures.h"
 
 
@@ -14,6 +12,8 @@ void write_string_to_slog(char* str);
 void write_open_ticketOffice(int num);
 
 void write_close_ticketOffice(int num);
+
+void write_close_server();
 
 int write_to_clog(pid_t pid, Answer* answer);
 

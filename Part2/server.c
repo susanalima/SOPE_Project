@@ -13,7 +13,7 @@ char OUT_SEM_NAME[] = "/sem3";
 int writen=FALSE;
 int flag = FALSE;
 Seat* seats;
-
+int full_room = FALSE;
 int num_seats;
 
 
@@ -24,19 +24,34 @@ int num_seats;
 
 int verifySeat(int number)
 {
-  printf("%d %d\n", number, num_seats);
-  if (number > num_seats)
+  if (number > num_seats || number > MAX_CLI_SEATS)
     return IID;
-  if (number > MAX_CLI_SEATS)
-    return IID;
+    //erro no atoi
+  if (number == 0)
+    return ERR;
   return OK;
-
 }
 
+//verifica se a sala esta cheia
+int is_room_full()
+{
+  if (full_room == TRUE)
+    return TRUE;
+  for(int i = 0; i < num_seats; i++)
+  {
+    if (seats[i].is_free == TRUE)
+      return FALSE;
+  }
+  return TRUE;
+}
 
+//valida o pedido
 int verifyRequest(Request* request)
 {
-  printf("%d\n", request->size);
+  full_room = is_room_full();
+  if (full_room == TRUE)
+    return FUL;
+
   if (request->size < request->num_wanted_seats)
     return IID;
 
@@ -46,12 +61,14 @@ int verifyRequest(Request* request)
   if (request->size > num_seats || request->num_wanted_seats > num_seats)
     return NST;
 
+  int validation;
   for (int i = 0; i < request->size; i++)
   {
-    if (verifySeat(request->pref_seat_list[i]) != OK)
-      return IID;
+    validation = verifySeat(request->pref_seat_list[i]);
+    if (validation != OK)
+      return validation;
   }
-    //outros testes;
+
   return OK;
 }
 
@@ -240,7 +257,7 @@ int main(int argc, char *argv[])
     seat.number = j+1;
     seats[j] = seat;
   }
-  
+
   //----------------------Memoria Partilhada-------------------------------------------------
   shmfd = shm_open(SHM_NAME,O_CREAT|O_RDWR,0600);
   if(shmfd<0)
@@ -352,15 +369,21 @@ int main(int argc, char *argv[])
     exit(5);
   }
 
-  close_slog();
-  //writes to sbook
-  write_to_sbook(seats, num_room_seats);
-
   printf("Server TimeOut. Waiting for ticket offices to close\n");
   for (i = 0; i < num_ticket_offices; i++)
   {
     pthread_join(ticket_offices[i],NULL);
+    write_close_ticketOffice(t_arg[i]);
   }
+
+  free(ticket_offices);
+  free(t_arg);
+
+  write_close_server();
+  close_slog();
+
+  //writes to sbook
+  write_to_sbook(seats, num_room_seats);
 
   exit(0);
 
