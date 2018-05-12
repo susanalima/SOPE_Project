@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
 	}
 
 
-	request.size = count-1; //acho que e isto
+	request.size = count-1;
   memcpy(request.pref_seat_list,tmp_seats,request.size*sizeof(int));
 	printf("%d v\n\n",request.size);
 
@@ -78,7 +78,16 @@ int main(int argc, char *argv[])
 	   exit(2);
 	}
 
-	signal(SIGALRM,clientTimeOut);
+  struct sigaction action;
+  action.sa_flags = 0;
+  action.sa_handler = clientTimeOut;
+  if (sigaction(SIGALRM, &action,NULL) < 0)
+  {
+    fprintf(stderr,"Unable to install SIGALRM handler\n");
+    exit(1);
+  }
+
+	//signal(SIGALRM,clientTimeOut);
 	alarm(request.time_out);
 
 	write(fd_req, &request, sizeof(request));
@@ -105,9 +114,8 @@ int main(int argc, char *argv[])
 
 	//printf("%d\n", answer.num_seats);
 //	printf("%d\n", answer.valid_request);
-
-  for (int k = 0; k < answer.num_seats; k++)
-    printf("%d\n", answer.seq[k]);
+//  for (int k = 0; k < answer.num_seats; k++)
+  //  printf("%d\n", answer.seq[k]);
 
 
    //destroys the fifo ansXXXXX

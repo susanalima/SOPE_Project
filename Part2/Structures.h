@@ -9,8 +9,7 @@ typedef struct
 {
 	pid_t pid;
 	int time_out;
-  	int num_wanted_seats;
-  //char* pref_seat_list; //passar como array de inteiros
+  int num_wanted_seats;
 	int pref_seat_list[MAX_CLI_SEATS];
 	int size;
 } Request;
@@ -27,7 +26,7 @@ typedef struct
 typedef struct
 {
 	int number;
-	int is_free; // TRUE OR FALSE
+	int is_free;
 	int clientId;
 } Seat;
 

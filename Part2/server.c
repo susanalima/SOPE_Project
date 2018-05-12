@@ -8,7 +8,7 @@ char SHM_NAME[]="/shm1";
 char SEM_NAME[]="/sem1";
 char OTHER_SEM_NAME[] = "/sem2";
 char OUT_SEM_NAME[] = "/sem3";
-//numero total de lugares na sala
+
 
 int writen=FALSE;
 int flag = FALSE;
@@ -176,7 +176,7 @@ void *func(void *arg)
 
     }
     answer.valid_request = valid_request;
-    answer.num_seats = count_valido; //pode nao ser
+    answer.num_seats = count_valido;
 
 
 
@@ -306,7 +306,16 @@ int main(int argc, char *argv[])
     write_open_ticketOffice(t_arg[i]);
   }
   //------------------Criar alarme---------------------------------------------------
-  signal(SIGALRM,timeOut);
+
+  struct sigaction action;
+  action.sa_flags = 0;
+  action.sa_handler = timeOut;
+  if (sigaction(SIGALRM, &action,NULL) < 0)
+  {
+    fprintf(stderr,"Unable to install SIGALRM handler\n");
+    exit(1);
+  }
+  //signal(SIGALRM,timeOut);
   alarm(open_time);
 
 
@@ -326,14 +335,6 @@ int main(int argc, char *argv[])
     //request.pref_seat_list = malloc(4*sizeof(int));
     if(read(fd_req, &request, sizeof(request))<=0)continue;
 
-    //request.pref_seat_list = malloc(request.size * sizeof(int)+1);
-    //read(fd_req, request.pref_seat_list, request.size * sizeof(int)+1);
-
-    /*for (int i = 0; i < request.size; i++)
-      printf("%d\n", request.pref_seat_list[i]);*/
-
-
-
     while(writen==TRUE){}
 
     s = shm;
@@ -341,7 +342,6 @@ int main(int argc, char *argv[])
     writen = TRUE;
 
   }
-
 
   close(fd_req);
 
