@@ -29,6 +29,8 @@ int verifySeat(int number)
     //erro no atoi
   if (number == 0)
     return ERR;
+  if (number < 0)
+	  return IID;
   return OK;
 }
 
